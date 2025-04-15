@@ -2,14 +2,14 @@ body {
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    background: url("img8.jpg") no-repeat center center;
+    background: url("img12.jpg") no-repeat center center;
     background-size: cover;
     color: white;
   }
 
   
   .navbar {
-    background-color: #5c3317; /* dark brown */
+    background-color: #a46e44; /* dark brown */
     padding: 10px 30px;
     height: 30px;
     display: flex;

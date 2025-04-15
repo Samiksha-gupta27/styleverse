@@ -6,13 +6,15 @@ body, html {
   }
   
   .navbar {
-    background-color: #a46e44;
     color: white;
-    padding: 15px 30px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    background-color: #a46e44; /* dark brown */
+    padding: 10px 30px;
+    height: 30px;
+    justify-content: flex-end;
   }
+  
   
   .nav-links a {
     color: black;

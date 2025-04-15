@@ -10,11 +10,10 @@
 
   <nav class="navbar">
     <div class="nav-links">
-      <a href="/">Home</a> |
-      <a href="/search">Search</a>
-    </div>
-    <div class="profile-icon">
-      <a href="/profile"><i class="fa-solid fa-user"></i></a>
+      <a href="{{ url_for('landing_page') }}">Home</a> 
+      <a href="{{ url_for('search_inspiration') }}">Search</a>
+      <a href="{{ url_for('upload') }}">Upload</a>
+      <a href="{{ url_for('profile') }}">Profile</a>
     </div>
   </nav>
 
@@ -22,8 +21,8 @@
     <div class="overlay">
       <h1><span>FIND</span> <span>YOUR</span> <span>VIBE</span></h1>
       <div class="buttons">
-        <a href="#" class="btn">Generate your own outfit</a>
-        <a href="#" class="btn">Search for inspiration</a>
+        <a href="upload" class="btn">Generate your own outfit</a>
+        <a href="get_inspiration" class="btn">Search for inspiration</a>
       </div>
     </div>
   </div>
