@@ -1,0 +1,393 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body, html {
+    height: 100%;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .hero {
+    background-image: url('img2.webp');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .app-name {
+    font-size: 4rem;
+    animation: fadeIn 2s ease-in;
+  }
+  .cta-button {
+    background-color: #d4af37;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  .cta-button:hover {
+    background-color: #b8860b;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .overlay {
+    background-color: rgba(0, 0, 0, 0.3); /* Optional overlay for better readability */
+    height: 100%;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .app-name {
+    position: absolute;
+    top: 30px;
+    font-size: 24px;
+    font-weight: 300;
+    color: white;
+  }
+  
+  .hero-content {
+    text-align: left;
+    width: 80%;
+    max-width: 700px;
+    padding-left: 50px;
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    animation: fadeIn 2s ease-in;
+  }
+  
+  .hero-content h2 {
+    font-size: 48px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+  
+  .hero-content span {
+    font-style: italic;
+    font-weight: 500;
+  }
+  
+  .cta-button {
+    display: inline-block;
+    margin-top: 30px;
+    background-color: #fdf4e3;
+    color: #2f2f2f;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .cta-button:hover {
+    background-color: #f1e2c5;
+  }
+
+  .offer-section {
+    background-color: #000; /* black background */
+    color: #fff; /* white text */
+    padding: 60px 20px;
+    font-family: 'Playfair Display', serif;
+  }
+  
+  .offer-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+  
+  .text {
+    flex: 1;
+    min-width: 300px;
+    margin-right: 40px;
+    text-align: center;
+  }
+  
+  .text h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  
+  .text em {
+    font-style: italic;
+  }
+  
+  .text p {
+    font-size: 18px;
+    line-height: 1.7;
+    font-weight: 500;
+  }
+  
+  .image {
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .image img {
+    background-image: url('img1.jpg'); 
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }  
+  .contact-section {
+    background: url('img3.jpg') no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f5f0e1;
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+    position: relative;
+  }
+  
+  .contact-overlay {
+    background: rgba(0, 0, 0, 0.4); /* subtle overlay */
+    padding: 40px 20px;
+    border-radius: 12px;
+  }
+  
+  .contact-section h2 {
+    font-size: 36px;
+    font-weight: 600;
+    margin-bottom: 40px;
+  }
+  
+  .contact-section em {
+    font-style: italic;
+  }
+  
+  .contact-section p {
+    font-size: 20px;
+    margin: 20px 0;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Playfair Display', serif;
+  }
+  
+  .signup-section {
+    background: url('img6.png') no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .form-container {
+    background: rgba(0, 0, 0, 0.5); /* translucent dark overlay */
+    padding: 40px 30px;
+    border-radius: 16px;
+    text-align: center;
+    width: 500px;
+    color: #fff;
+  }
+  
+  .form-container h2 {
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 30px;
+    font-style: italic;
+  }
+  
+  form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #654e40;
+    color: #fff;
+    font-size: 16px;
+  }
+  
+  form input::placeholder {
+    color: #f5f5f5;
+  }
+  
+  form button {
+    padding: 10px 20px;
+    background-color: #d8a97b;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  form button:hover {
+    background-color: #c48a5e;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body, html {
+    height: 100%;
+    font-family: 'Playfair Display', serif;
+  }
+  
+  .hero {
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    position: relative;
+    color: #fefae0;
+  }
+  
+  .overlay {
+    background-color: rgba(0, 0, 0, 0.3); /* Optional overlay for better readability */
+    height: 100%;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .app-name {
+    position: absolute;
+    top: 30px;
+    font-size: 24px;
+    font-weight: 300;
+    color: white;
+  }
+  
+  .hero-content {
+    text-align: left;
+    width: 80%;
+    max-width: 700px;
+    padding-left: 50px;
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+  }
+  
+  .hero-content h2 {
+    font-size: 48px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+  
+  .hero-content span {
+    font-style: italic;
+    font-weight: 500;
+  }
+  
+  .cta-button {
+    display: inline-block;
+    margin-top: 30px;
+    background-color: #fdf4e3;
+    color: #2f2f2f;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .cta-button:hover {
+    background-color: #f1e2c5;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Playfair Display', serif;
+    background-image: url("/static/images/background.jpg"); /* Replace with your actual image */
+    background-size: cover;
+    background-position: center;
+    color: white;
+    height: 100vh;
+}
+
+.navbar {
+    background-color: #5c3317;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+}
+
+.nav-links a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-user {
+    color: white;
+}
+
+.main-content {
+    text-align: center;
+    margin-top: 10%;
+}
+
+.title-top {
+    font-size: 50px;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.title-bottom {
+    font-size: 100px;
+    font-weight: bold;
+    margin-top: -20px;
+}
+
+.upload-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-input {
+    background-color: #a46e43;
+    color: black;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-family: 'Playfair Display', serif;
+}
+
+.generate-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(to right, #a16dd3, #f47c48);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+}
+

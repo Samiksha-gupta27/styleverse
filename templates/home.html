@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Home | StyleVerse</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-links">
+      <a href="/">Home</a> |
+      <a href="/search">Search</a>
+    </div>
+    <div class="profile-icon">
+      <a href="/profile"><i class="fa-solid fa-user"></i></a>
+    </div>
+  </nav>
+
+  <div class="landing-container">
+    <div class="overlay">
+      <h1><span>FIND</span> <span>YOUR</span> <span>VIBE</span></h1>
+      <div class="buttons">
+        <a href="#" class="btn">Generate your own outfit</a>
+        <a href="#" class="btn">Search for inspiration</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

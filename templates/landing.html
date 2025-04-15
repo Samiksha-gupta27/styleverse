@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+</head>
+<body>
+  <div class="hero">
+    <div class="overlay">
+      <h1 class="app-name">StyleVerse</h1>
+      <div class="hero-content">
+        <h2>Quick and<br><span>hassle-free</span> styling</h2>
+        <a href="{{ url_for('signup_form') }}" class="cta-button">Get Started!</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="offer-section">
+    <div class="offer-content">
+      <div class="text">
+        <h2>What <em>We offer</em></h2>
+        <p>
+          At <strong>StyleVerse</strong>, we provide a diverse collection of fashionable outfits designed for every occasion. Whether you are looking for casual wear, elegant evening attire, or trendy streetwear, our carefully curated selection ensures you find the perfect style to match your personality. We focus on quality, comfort, and the latest fashion trends, making it easy for you to upgrade your wardrobe with stylish and versatile pieces. Shop with confidence and discover outfits that make you look and feel your best!
+        </p>
+      </div>
+      <div class="image">
+        <img src="static\css\img1.jpg" alt="StyleVerse">
+      </div>
+    </div>
+  </section>  
+  
+  <section class="contact-section">
+    <div class="contact-overlay">
+      <h2><em>Contact</em> Information</h2>
+      <p>Email Address</p>
+      <p>Phone Number</p>
+    </div>
+  </section>
+  
+  {% endblock %}
