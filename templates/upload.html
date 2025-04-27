@@ -13,7 +13,6 @@
     <div class="nav-links">
       <a href="{{ url_for('landing_page') }}">Home</a>
       <a href="{{ url_for('search') }}">Search</a>
-      <a href="{{ url_for('upload') }}">Upload</a>
       <a href="{{ url_for('profile') }}" class="fa-solid fa-user">Profile</a>
     </div>
   </nav>
@@ -22,11 +21,26 @@
   <!-- HERO SECTION -->
   <div class="hero">
     <h1 class="hero-top">Let’s get</h1>
-    <form class="upload-form">
-        <input type="file" class="upload-box" />
+    <form id="imageUploadForm" enctype="multipart/form-data">
+      <input type="file" id="imageInput" name="image" accept="image/*" />
         <button class="generate-btn">Generate</button>
     </form>
     <h1 class="hero-bottom">creative</h1>
   </div>
+  
+  <script>
+    const form = document.getElementById('imageUploadForm');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      
+      const response = await fetch('/upload-image', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json();
+      console.log('Image uploaded:', result);
+    });
+  </script>
 </body>
 </html>

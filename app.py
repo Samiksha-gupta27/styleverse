@@ -1,14 +1,25 @@
 from flask import Flask, g, jsonify, request, render_template, redirect, url_for, flash , session
 from uuid import uuid4
 from functools import wraps
+from flask_cors import CORS
+# from ultralytics import YOLO
 from neo4j import GraphDatabase   
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
+import cv2
+import base64
+
+
+# Allow cross-origin requests
+
+# YOLO model setup
+#model = YOLO("yolov8n-seg.pt")
+
 
 app = Flask(__name__)
-
+CORS(app)  
 app.secret_key = 'random_key_idkwhattotype'
 app.secret_key = os.environ.get("SECRET_KEY", "dev_default_key")
 
@@ -16,7 +27,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev_default_key")
 
 uri = "bolt://localhost:7687"
 user = "neo4j"
-password = "12345678"  # <- double check this
+password = "123456789"  # <- double check this
 driver = GraphDatabase.driver(uri, auth=(user, password))
 
 
@@ -47,9 +58,42 @@ def search():
     return render_template('search.html')
 
 
-@app.route('/profile')
+@app.route('/profile', methods=["GET", "POST"])
 def profile():
-    return render_template('profile.html')
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    # Fetch user details
+    user_query = "MATCH (u:User {userId: $user_id}) RETURN u"
+    user_data = query_neo4j(user_query, user_id=user_id)
+
+    # Fetch user's uploads
+    uploads_query = """
+    MATCH (u:User {userId: $user_id})-[:UPLOADED]->(img:Image)
+    RETURN img
+    """
+    uploads_data = query_neo4j(uploads_query, user_id=user_id)
+
+    images = []
+    for record in uploads_data:
+        img_node = record['img']
+        images.append({
+            "imageId": img_node.get('imageId'),
+            "fileName": img_node.get('fileName'),
+            "tags": img_node.get('tags'),
+            "uploadedAt": img_node.get('uploadedAt'),
+            "data": img_node.get('data')
+        })
+
+    return render_template('profile.html', user=user_data[0]['u'], images=images)
+
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    session.clear()
+    flash("You have been logged out successfully.", "info")
+    return redirect(url_for('home'))
 
 # Replace with your actual import
   # Needed for flash messages
@@ -112,30 +156,6 @@ def register_user():
         flash("Registration failed. Please try again.", "danger")
         return redirect(url_for("signup_form"))
 
-@app.route("/users/me/wardrobe/items", methods=["POST"])
-# Assuming you have authentication middleware
-def add_wardrobe_item():
-    user_id = g.user_id  # Get user ID from authentication
-    data = request.get_json()
-    item_id = str(uuid4())
-    query = """
-    MATCH (u:User {userId: $userId})
-    CREATE (i:ClothingItem {
-        itemId: $itemId,
-        name: $name,
-        category: $category,
-        imageUrl: $imageUrl,
-        colors: $colors,
-        sizes: $sizes
-    })
-    CREATE (u)-[:OWNS]->(i)
-    RETURN i
-    """
-    result = query_neo4j(query, userId=user_id, itemId=item_id, **data)
-    if result:
-        item = result[0]['i']
-        return jsonify({"item": dict(item), "message": "Wardrobe item added"}), 201
-    return jsonify({"message": "Failed to add wardrobe item"}), 500
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -207,19 +227,7 @@ def login_user():
     else:
         return jsonify({"message": "Invalid credentials"}), 401
 
-@app.route("/users/me/wardrobe/items", methods=["GET"])
-# Assuming you have authentication middleware
-def get_wardrobe_items():
-    user_id = g.user_id
-    query = """
-    MATCH (u:User {userId: $userId})-[:OWNS]->(i:ClothingItem)
-    RETURN collect(i) AS items
-    """
-    result = query_neo4j(query, userId=user_id)
-    if result and result[0]['items']:
-        items = [dict(item) for item in result[0]['items']]
-        return jsonify(items), 200
-    return jsonify([]), 200
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -233,52 +241,26 @@ def upload():
             return redirect(url_for('upload'))
     return render_template('upload.html')
 
-@app.route('/generate-outfit', methods=['POST'])
-def generate_outfit():
-    data = request.get_json()
-    user_id = session.get("user_id")
-
-    # You can base the generation on preferences
-    preferences = data.get("preferences", {})
+@app.route("/favourite_items", methods=["POST"])
+def favorite_item(item_id):
+    user_id = session.get('user_id')
     
-    # Sample query (you can improve logic with ML or rule-based outfit generation)
     query = """
-    MATCH (u:User {userId: $userId})-[:OWNS]->(item:ClothingItem)
-    RETURN item
-    LIMIT 5
+    MATCH (u:User {userId: $user_id})-[:OWNS]->(i:ClothingItem {itemId: $item_id})
+    SET i.favorite = true
+    RETURN i
     """
-    items = query_neo4j(query, userId=user_id)
+    result = query_neo4j(query, user_id=user_id, item_id=item_id)
+    if result:
+        flash("Item marked as favorite!", "success")
+        return redirect(url_for('profile'))  # Redirect back to profile page
+    flash("Item not found.", "danger")
+    return redirect(url_for('profile')) 
 
-    if not items:
-        return jsonify({"message": "No items found"}), 404
-
-    outfit = [dict(item['item']) for item in items]
-    return jsonify({"outfit": outfit}), 200
 
 @app.route('/generate', methods=['GET'])
 def generate_page():
     return render_template('generate.html')
-
-
-@app.route('/inspiration', methods=['GET'])
-def get_inspiration():
-    style = request.args.get('style', 'casual')
-
-    # Sample query to fetch public inspiration outfits
-    query = """
-    MATCH (i:InspirationOutfit)
-    WHERE $style IN i.styles
-    RETURN i
-    LIMIT 10
-    """
-    result = query_neo4j(query, style=style)
-
-    if not result:
-        return jsonify({"message": "No inspiration found"}), 404
-
-    outfits = [dict(item['i']) for item in result]
-    return jsonify({"inspiration": outfits}), 200
-
 
 @app.route('/search', methods=['GET'])
 def search_inspiration():
@@ -288,6 +270,64 @@ def search_inspiration():
 def landing_page():
     return render_template("home.html")
 
+def query_neo4j(query, **kwargs):
+    with driver.session() as session:
+        session.run(query, kwargs)
+
+# Save image data to Neo4j
+def save_to_neo4j(image_data, bounding_boxes, masks, user_id=None):
+    query = """
+    CREATE (img:Image {
+        data: $data,
+        bounding_boxes: $bounding_boxes,
+        masks: $masks,
+        uploaded_at: datetime()
+    })
+    """ + ("""
+    WITH img
+    MATCH (u:User {userId: $user_id})
+    MERGE (u)-[:UPLOADED]->(img)
+    """ if user_id else "")
+
+    query_neo4j(
+        query,
+        data=image_data,
+        bounding_boxes=bounding_boxes,
+        masks=masks,
+        user_id=user_id
+    ) 
+
+# @app.route('/upload-image', methods=['POST'])
+# def upload_image():
+#     # Check for image in request
+#     image = request.files.get('image')
+#     if not image:
+#         return jsonify({"error": "No image file provided"}), 400
+
+#     # Save image temporarily
+#     os.makedirs("uploads", exist_ok=True)
+#     image_path = os.path.join("uploads", image.filename)
+#     image.save(image_path)
+
+#     # Load image with OpenCV
+#     img = cv2.imread(image_path)
+#     if img is None:
+#         return jsonify({"error": "Failed to read uploaded image"}), 500
+#     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+#     # YOLOv8 segmentation
+#     # Encode image as base64
+#     _, img_encoded = cv2.imencode('.jpg', img)
+#     image_base64 = base64.b64encode(img_encoded).decode('utf-8')
+
+#     # Optional: check for logged-in user
+#     user_id = session.get('user_id')  # Optional: attach to user node
+
+#     # Save all to Neo4j
+#     save_to_neo4j(image_base64, user_id)
 
 if __name__ == '__main__':
+
+    if not os.path.exists("uploads"):
+        os.makedirs("uploads")
     app.run(debug=True)
