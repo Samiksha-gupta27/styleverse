@@ -22,39 +22,7 @@
             <h1>Welcome, {{ session.get('user') }}</h1>
             <p>Email: {{ session.get('email') }}</p>
         </section>
-        <section class="wardrobe">
-            <h2>Your Wardrobe</h2>
-            <ul>
-                {% for item in wardrobe %}
-                <li>
-                    <img src="{{ item.imageUrl }}" alt="{{ item.name }}">
-                    <p>{{ item.name }}</p>
-                    <p>Category: {{ item.category }}</p>
-                    <p>Colors: {{ item.colors | join(', ') }}</p>
-                </li>
-                {% endfor %}
-            </ul>
-            <ul>
-                {% for item in items %}
-                    <li>
-                        <img src="{{ item.imageUrl }}" alt="{{ item.name }}" width="100px">
-                        <p>{{ item.name }} - {{ item.category }} </p>
-            
-                        <!-- Favorite Button -->
-                        {% if not item.favorite %}
-                            <form action="{{ url_for('favorite_item', item_id=item.itemId) }}" method="POST">
-                                <button type="submit">Mark as Favorite</button>
-                            </form>
-                        {% else %}
-                            <p>Marked as Favorite</p>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-                </ul>
-            {% else %}
-                <p>No items in your wardrobe.</p>
-            {% endif %}            
-        </section>
+       
         <section class="actions">
             <h2>Actions</h2>
             <a href="{{ url_for('upload') }}" class="button">Upload New Item</a>

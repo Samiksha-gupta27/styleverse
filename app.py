@@ -1,7 +1,7 @@
 from flask import Flask, g, jsonify, request, render_template, redirect, url_for, flash , session
 from uuid import uuid4
 from functools import wraps
-from flask_cors import CORS
+#from flask_cors import CORS
 # from ultralytics import YOLO
 from neo4j import GraphDatabase   
 import os
@@ -19,7 +19,7 @@ import base64
 
 
 app = Flask(__name__)
-CORS(app)  
+#CORS(app)  
 app.secret_key = 'random_key_idkwhattotype'
 app.secret_key = os.environ.get("SECRET_KEY", "dev_default_key")
 
@@ -41,11 +41,14 @@ def close_neo4j_driver(error):
     if hasattr(g, 'neo4j_driver'):
         g.neo4j_driver.close()
 
-def query_neo4j(query, **kwargs):
-    driver = get_neo4j_driver()
+
+
+# Helper function to query Neo4j
+def query_neo4j(cypher_query, **params):
     with driver.session() as session:
-        result = session.run(query, **kwargs)
-        return result.data()
+        result = session.run(cypher_query, params)
+        return [record.data() for record in result]
+
     
 users = {}
 
@@ -60,20 +63,20 @@ def search():
 
 @app.route('/profile', methods=["GET", "POST"])
 def profile():
-    user_id = session.get('user_id')
-    if not user_id:
+    email = session.get('email')
+    if not email:
         return redirect(url_for('login'))
 
     # Fetch user details
-    user_query = "MATCH (u:User {userId: $user_id}) RETURN u"
-    user_data = query_neo4j(user_query, user_id=user_id)
+    user_query = "MATCH (u:User {email: $email}) RETURN u"
+    user_data = query_neo4j(user_query, email=email)
 
     # Fetch user's uploads
     uploads_query = """
     MATCH (u:User {userId: $user_id})-[:UPLOADED]->(img:Image)
     RETURN img
     """
-    uploads_data = query_neo4j(uploads_query, user_id=user_id)
+    uploads_data = query_neo4j(uploads_query, email=email)
 
     images = []
     for record in uploads_data:
@@ -94,99 +97,103 @@ def logout():
     session.clear()
     flash("You have been logged out successfully.", "info")
     return redirect(url_for('home'))
+    
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form.get('username').strip()
+        email = request.form.get('email').strip()
+        first_name = request.form.get('firstName').strip()
+        last_name = request.form.get('lastName').strip()
+        password = request.form.get('password').strip()
 
-# Replace with your actual import
-  # Needed for flash messages
+        if not all([username, email, first_name, last_name, password]):
+            flash("All fields are required.", "warning")
+            return redirect(url_for('signup'))
+                  
+        # Check if user already exists
+        check_query = """
+        MATCH (u:User)
+        WHERE u.username = $username OR u.email = $email
+        RETURN u
+        """
+        existing_user = query_neo4j(check_query, username=username, email=email)
 
-@app.route("/signup", methods=["GET"])
-def signup_form():
-    return render_template("signup.html")
+        if existing_user:
+            flash("Username or email already exists.", "danger")
+            return redirect(url_for('signup'))
 
-@app.route("/signup", methods=["POST"])
-def register_user():
-    username = request.form.get("username").strip()
-    email = request.form.get("email").strip()
-    first_name = request.form.get("firstName").strip()
-    last_name = request.form.get("lastName").strip()
-    password = request.form.get("password").strip()
+        # Register user
+        user_id = str(uuid4())
+        hashed_password = generate_password_hash(password)
 
-    if not all([username, email, first_name, last_name, password]):
-        flash("All fields are required.", "warning")
-        return redirect(url_for("signup_form"))
+        create_query = """
+        CREATE (u:User {
+            userId: $userId,
+            username: $username,
+            email: $email,
+            firstName: $firstName,
+            lastName: $lastName,
+            password: $password
+        })
+        RETURN u
+        """
+        result = query_neo4j(create_query,
+                             userId=user_id,
+                             username=username,
+                             email=email,
+                             firstName=first_name,
+                             lastName=last_name,
+                             password=hashed_password)
+        print(result)
+        if result:
+            print("saved successfully")
+            flash("Registration successful! Please log in.", "success")
+            return redirect(url_for('login'))
+        else:
+            print("Some error with neo4j")
+            flash("Registration failed. Please try again.", "danger")
+            return redirect(url_for('signup'))
 
-    # Check if username or email already exists
-    check_query = """
-    MATCH (u:User)
-    WHERE u.username = $username OR u.email = $email
-    RETURN u
-    """
-    existing_user = query_neo4j(check_query, username=username, email=email)
+    # GET Request -> show signup page
+    return render_template('signup.html')
 
-    if existing_user:
-        flash("Username or email already exists.", "danger")
-        return redirect(url_for("login"))
-
-    user_id = str(uuid4())
-    hashed_password = generate_password_hash(password)
-
-    # Create new user
-    create_query = """
-    CREATE (u:User {
-        userId: $userId,
-        username: $username,
-        email: $email,
-        firstName: $firstName,
-        lastName: $lastName,
-        password: $password
-    })
-    RETURN u
-    """
-    result = query_neo4j(create_query,
-                         userId=user_id,
-                         username=username,
-                         email=email,
-                         firstName=first_name,
-                         lastName=last_name,
-                         password=hashed_password)
-
-    if result:
-        flash("User registered successfully!", "success")
-        return redirect(url_for("login"))
-    else:
-        flash("Registration failed. Please try again.", "danger")
-        return redirect(url_for("signup_form"))
-
-
-
+# -------------------- LOGIN API --------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        data = request.form
-        email = data.get('email')
-        password = data.get('password')
+        email = request.form.get('email').strip()
+        password = request.form.get('password').strip()
 
-        # You can query Neo4j to verify the user instead of this simple dict
-        query = """
+        if not email or not password:
+            flash("Email and Password are required.", "warning")
+            return redirect(url_for('login'))
+
+        # Find user by email
+        find_user_query = """
         MATCH (u:User {email: $email})
         RETURN u
         """
-        result = query_neo4j(query, email=email)
+        result = query_neo4j(find_user_query, email=email)
 
         if result:
-            user_node = result[0]['u']
-            hashed_pw = user_node['password']
+            user = result[0]['u']
+            hashed_pw = user['password']
 
-            from werkzeug.security import check_password_hash
             if check_password_hash(hashed_pw, password):
-                session['user'] = user_node['username']
-                session['user_id'] = user_node['userId']  # Optional: store userId
-                flash(f"Welcome back, {user_node['username']}!", "success")
-                return redirect(url_for('landing_page'))  # ✅ REDIRECT TO HOME
+                # Login successful
+                session['user'] = user['username']
+                session['+'] = user['userId']
+                flash(f"Welcome back, {user['username']}!", "success")
+                return redirect(url_for('landing_page'))
 
-        flash("Invalid credentials", "danger")
+        # Invalid credentials
+        flash("Invalid email or password.", "danger")
         return redirect(url_for('login'))
 
+    # GET Request -> show login page
     return render_template('login.html')
+
 
 @app.route("/users/login", methods=["POST"])
 def login_user():
@@ -270,9 +277,6 @@ def search_inspiration():
 def landing_page():
     return render_template("home.html")
 
-def query_neo4j(query, **kwargs):
-    with driver.session() as session:
-        session.run(query, kwargs)
 
 # Save image data to Neo4j
 def save_to_neo4j(image_data, bounding_boxes, masks, user_id=None):
